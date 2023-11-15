@@ -115,19 +115,30 @@ void ANoiseTerrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	Offset.X += 0.01;
+	Offset.Y += 0.01;
+
+	GenerateNoiseMap();
+	GenerateMesh();
+
+	UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UV, Normals, Tangents);
+
+	ProceduralMeshComponent->CreateMeshSection(0, Vertices, Triangles, Normals, UV, Colors, Tangents, true);
+	ProceduralMeshComponent->SetMaterial(0, Material);
+	
 	//return;
 
 	// This debugging gets very expensive at high resolutions - avoid
-	for (int i = 0; i < Vertices.Num(); i++)
-	{
-		/*
-		FString DebugString;
-		DebugString.Append(FString::SanitizeFloat(NoiseArray[i]));
-		DebugString.Append(":");
-		DebugString.Append(FString::FromInt(i));
-		*/
-
-		DrawDebugPoint(GetWorld(), Vertices[i], 5.f, FColor::Red);
-		//DrawDebugString(GetWorld(), Vertices[i], DebugString);
-	}
+	// for (int i = 0; i < Vertices.Num(); i++)
+	// {
+	// 	/*
+	// 	FString DebugString;
+	// 	DebugString.Append(FString::SanitizeFloat(NoiseArray[i]));
+	// 	DebugString.Append(":");
+	// 	DebugString.Append(FString::FromInt(i));
+	// 	*/
+	//
+	// 	DrawDebugPoint(GetWorld(), Vertices[i], 5.f, FColor::Red);
+	// 	//DrawDebugString(GetWorld(), Vertices[i], DebugString);
+	// }
 }
