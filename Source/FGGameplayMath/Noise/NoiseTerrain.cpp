@@ -3,6 +3,7 @@
 #include "NoiseTerrain.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "FGGameplayMath/Intersection/IntersectionSubsystem.h"
 
 // Sets default values
 ANoiseTerrain::ANoiseTerrain()
@@ -23,8 +24,21 @@ void ANoiseTerrain::OnConstruction(const FTransform& Transform)
 
 	UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UV, Normals, Tangents);
 
-	ProceduralMeshComponent->CreateMeshSection(0, Vertices, Triangles, Normals, UV, Colors, Tangents, true);
-	ProceduralMeshComponent->SetMaterial(0, Material);
+	ProceduralMeshComponent->CreateMeshSection(
+		0,
+		Vertices,
+		Triangles,
+		Normals,
+		UV,
+		Colors,
+		Tangents,
+		true
+		);
+
+	ProceduralMeshComponent->SetMaterial(
+		0,
+		Material
+		);
 }
 
 // Called when the game starts or when spawned
@@ -39,6 +53,8 @@ void ANoiseTerrain::BeginPlay()
 
 	ProceduralMeshComponent->CreateMeshSection(0, Vertices, Triangles, Normals, UV, Colors, Tangents, true);
 	ProceduralMeshComponent->SetMaterial(0, Material);
+
+	GetWorld()->GetSubsystem<UIntersectionSubsystem>()->RegisterNoiseTerrain(this);
 }
 
 void ANoiseTerrain::GenerateNoiseMap()
@@ -130,4 +146,41 @@ void ANoiseTerrain::Tick(float DeltaTime)
 		DrawDebugPoint(GetWorld(), Vertices[i], 5.f, FColor::Red);
 		//DrawDebugString(GetWorld(), Vertices[i], DebugString);
 	}
+}
+
+void ANoiseTerrain::FindClosestQuad(FVector Location, TArray<FVector>& ReturnArray)
+{
+	FVector HeightMapOrigin;
+	
+	HeightMapOrigin.X = -Resolution / 2.0f;
+	HeightMapOrigin.Y = -Resolution / 2.0f;
+	HeightMapOrigin.Z = 0.f;
+
+	Location.Z = 0.f;
+	const auto PositionInHeightmap = Location - HeightMapOrigin;
+
+	const float StepSize = 1.f / Resolution;
+
+	const auto X = static_cast<int32>(PositionInHeightmap.X / StepSize);
+	const auto XPlus = static_cast<int32>((PositionInHeightmap.X + StepSize) / StepSize);
+	
+	const auto Y = static_cast<int32>(PositionInHeightmap.Y / StepSize);
+	const auto YPlus = static_cast<int32>((PositionInHeightmap.Y + StepSize) / StepSize);
+
+	int32 Index1 = Y * Resolution + X;
+	int32 Index2 = Y * Resolution + XPlus;
+	int32 Index3 = YPlus * Resolution + XPlus;
+	int32 Index4 = YPlus * Resolution + X;
+
+	const auto Max = Vertices.Num() - 1;
+	
+	Index1 = FMath::Clamp(Index1, 0, Max);
+	Index2 = FMath::Clamp(Index2, 0, Max);
+	Index3 = FMath::Clamp(Index3, 0, Max);
+	Index4 = FMath::Clamp(Index4, 0, Max);
+
+	ReturnArray.Add(Vertices[Index1]);
+	ReturnArray.Add(Vertices[Index2]);
+	ReturnArray.Add(Vertices[Index3]);
+	ReturnArray.Add(Vertices[Index4]);
 }

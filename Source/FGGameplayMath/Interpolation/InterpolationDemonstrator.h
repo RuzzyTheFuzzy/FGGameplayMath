@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "FGGameplayMath/Demonstrator.h"
 #include "Interpolator.h"
+#include "InterpolatorAsset.h"
 #include "InterpolationDemonstrator.generated.h"
 
 UCLASS(BlueprintType, Blueprintable)
@@ -19,7 +20,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FInterpolator Interpolator;
+	UInterpolatorAsset* Interpolator;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (MakeEditWidget = true))
 	FVector TargetPosition;

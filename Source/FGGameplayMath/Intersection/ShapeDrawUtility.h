@@ -251,4 +251,70 @@ public:
 			Color
 			);			
 	}
+
+	UFUNCTION(BlueprintCallable, Category = "Draw Shape")
+	static void Quad(
+		const UWorld* WorldContext,	
+		const FVector& V0,
+		const FVector& V1,
+		const FVector& V2,
+		const FVector& V3,
+		const FColor& Color)
+	{
+		DrawDebugLine(
+			WorldContext,
+			V0,
+			V0 + FVector::UpVector * 100.f,
+			FColor::Magenta
+			);
+
+		DrawDebugLine(
+			WorldContext,
+			V1,
+			V1 + FVector::UpVector * 100.f,
+			FColor::Magenta
+			);
+
+		DrawDebugLine(
+			WorldContext,
+			V2,
+			V2 + FVector::UpVector * 100.f,
+			FColor::Magenta
+			);
+
+		DrawDebugLine(
+			WorldContext,
+			V3,
+			V3 + FVector::UpVector * 100.f,
+			FColor::Magenta
+			);		
+		
+		DrawDebugLine(
+			WorldContext,
+			V0,
+			V1,
+			Color
+			);
+
+		DrawDebugLine(
+			WorldContext,
+			V1,
+			V2,
+			Color
+			);
+
+		DrawDebugLine(
+			WorldContext,
+			V2,
+			V3,
+			Color
+			);
+
+		DrawDebugLine(
+			WorldContext,
+			V3,
+			V0,
+			Color
+			);
+	}	
 };
