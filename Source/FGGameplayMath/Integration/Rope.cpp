@@ -40,7 +40,7 @@ void URope::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentT
 		for(int i = 0; i < Iterations; i++)
 		{
 			ApplyConstraints();
-			//AdjustCollisions();
+			AdjustCollisions();
 		}
 
 		TimeAccumulation -= StepTime;
@@ -103,7 +103,7 @@ void URope::SnapshotCollision()
 {
 	SweepInfos.Empty();
 	
-	for (int i = 0; i < Nodes.Num(); i++)
+	for (auto i = 1; i < Nodes.Num(); i++)
 	{
 		auto SweepBuffer = TArray<FHitResult>();
 
@@ -124,32 +124,30 @@ void URope::SnapshotCollision()
 				TraceShape.GetSphereRadius(),
 				8,
 				FColor::Red
-				);					
-		
-			auto NewSweepInfo = FRopeSweepInfo();
-			NewSweepInfo.Index = i;
-
-			auto ClosestDistance = TNumericLimits<float>::Min();
+				);
 
 			for(int s = 0; s < SweepBuffer.Num(); s++)
 			{
-				const auto HitPoint = SweepBuffer[s];
-
-				if(HitPoint.Distance < ClosestDistance)
+				const auto Component = SweepBuffer[s].Component;
+				auto bExistsInSweep = false;
+				
+				for(auto LocalSweepInfo : SweepInfos)
 				{
-					NewSweepInfo.ImpactPoint = HitPoint.ImpactPoint;
-					ClosestDistance = HitPoint.Distance;
+					if(LocalSweepInfo.Component == Component)
+					{
+						LocalSweepInfo.NodeIndices.Add(i);
+						bExistsInSweep = true;
+					}
+				}
+
+				if(!bExistsInSweep)
+				{
+					auto NewSweepInfo = FRopeSweepInfo();
+					NewSweepInfo.Component = Component;
+					NewSweepInfo.NodeIndices.Add(i);
+					SweepInfos.Add(NewSweepInfo);
 				}
 			}
-
-			DrawDebugPoint(
-				GetWorld(),
-				NewSweepInfo.ImpactPoint,
-				15.f,
-				FColor::Cyan
-				);
-
-			SweepInfos.Add(NewSweepInfo);
 		}
 		else
 		{
@@ -170,19 +168,37 @@ void URope::AdjustCollisions()
 	{
 		const auto SweepInfo = SweepInfos[i];
 
-		const FVector NodeLocation = Nodes[SweepInfo.Index].Location;
-		const FVector OldNodeLocation = Nodes[SweepInfo.Index].OldLocation;
-		
-		const FVector CollisionLocation = SweepInfo.ImpactPoint;
+		const auto Component = SweepInfo.Component;
+		const auto ComponentLocation = Component->GetComponentLocation();
+		const auto Shape = Component->GetCollisionShape();
 
-		const auto Distance = FVector::Distance(CollisionLocation, NodeLocation);
+		for(const auto NodeIndex : SweepInfo.NodeIndices)
+		{
+			const FVector NodeLocation = Nodes[NodeIndex].Location;
+			const FVector OldNodeLocation = Nodes[NodeIndex].OldLocation;
 
-		if(Distance - CollisionRadius > CollisionRadius)
-			continue;
+			if(Shape.ShapeType == ECollisionShape::Sphere)
+			{
+				const auto Radius = Shape.Sphere.Radius;
 
-		const FVector Direction = NodeLocation - CollisionLocation;
+				DrawDebugSphere(
+					GetWorld(),
+					ComponentLocation,
+					Radius,
+					8,
+					FColor::Red
+					);				
 				
-		// Apply intersection as new position
-		Nodes[SweepInfo.Index].Location = OldNodeLocation + (Direction.GetSafeNormal() * Distance);
+				if(const auto Distance = FVector::Distance(ComponentLocation, NodeLocation);
+					Distance - Radius > 0)
+				{
+					continue;
+				}
+
+				const auto Direction = NodeLocation - ComponentLocation;
+				const auto HitLocation = ComponentLocation - Direction.GetSafeNormal() * Radius;
+				Nodes[NodeIndex].Location = HitLocation;
+			}
+		}
 	}
 }
