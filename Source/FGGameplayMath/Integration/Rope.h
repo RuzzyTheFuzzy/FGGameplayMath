@@ -14,8 +14,6 @@ class FGGAMEPLAYMATH_API URope
 {
 	GENERATED_BODY()
 
-	int32 CollisionCount;
-	
 	TArray<FVerletNode> Nodes;
 	TArray<FOverlapResult> TraceBuffer;
 	TArray<FRopeSweepInfo> SweepInfos;
@@ -53,6 +51,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float CollisionRadius = 10.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int32 CollisionCount = 10;
 
 	URope(const FObjectInitializer& ObjectInitializer);
 

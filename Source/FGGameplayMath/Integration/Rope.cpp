@@ -118,6 +118,7 @@ void URope::SnapshotCollision()
 
 		if(SweepBuffer.Num() > 0)
 		{
+			/*
 			DrawDebugSphere(
 				GetWorld(),
 				Nodes[i].Location,
@@ -125,13 +126,17 @@ void URope::SnapshotCollision()
 				8,
 				FColor::Red
 				);
+				*/
 
 			for(int s = 0; s < SweepBuffer.Num(); s++)
 			{
+				if(s > CollisionCount)
+					break;
+				
 				const auto Component = SweepBuffer[s].Component;
 				auto bExistsInSweep = false;
 				
-				for(auto LocalSweepInfo : SweepInfos)
+				for(FRopeSweepInfo &LocalSweepInfo : SweepInfos)
 				{
 					if(LocalSweepInfo.Component == Component)
 					{
@@ -149,25 +154,13 @@ void URope::SnapshotCollision()
 				}
 			}
 		}
-		else
-		{
-			DrawDebugSphere(
-			GetWorld(),
-			Nodes[i].Location,
-			TraceShape.GetSphereRadius(),
-			8,
-			FColor::Green
-			);			
-		}
      }
 }
 
 void URope::AdjustCollisions()
 {
-	for (int i = 0; i < SweepInfos.Num(); i++)
+	for (const auto SweepInfo : SweepInfos)
 	{
-		const auto SweepInfo = SweepInfos[i];
-
 		const auto Component = SweepInfo.Component;
 		const auto ComponentLocation = Component->GetComponentLocation();
 		const auto Shape = Component->GetCollisionShape();
@@ -181,22 +174,15 @@ void URope::AdjustCollisions()
 			{
 				const auto Radius = Shape.Sphere.Radius;
 
-				DrawDebugSphere(
-					GetWorld(),
-					ComponentLocation,
-					Radius,
-					8,
-					FColor::Red
-					);				
-				
 				if(const auto Distance = FVector::Distance(ComponentLocation, NodeLocation);
 					Distance - Radius > 0)
 				{
 					continue;
 				}
 
-				const auto Direction = NodeLocation - ComponentLocation;
+				const auto Direction = ComponentLocation - NodeLocation;
 				const auto HitLocation = ComponentLocation - Direction.GetSafeNormal() * Radius;
+
 				Nodes[NodeIndex].Location = HitLocation;
 			}
 		}
