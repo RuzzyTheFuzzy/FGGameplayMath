@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "IntersectionDemonstrator.h"
+#include "FGGameplayMath/Noise/NoiseTerrain.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "IntersectionSubsystem.generated.h"
 
@@ -20,12 +21,22 @@ class FGGAMEPLAYMATH_API UIntersectionSubsystem
 
 	UPROPERTY()
 	APlayerController* PlayerControllerInstance;
+
+	UPROPERTY()
+	ANoiseTerrain* NoiseTerrain;
 	
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
 
+	ANoiseTerrain* GetNoiseTerrain() const
+	{
+		return NoiseTerrain;
+	}
+
 	void RegisterPlayerController(APlayerController* PlayerController);
+
+	void RegisterNoiseTerrain(ANoiseTerrain* NewNoiseTerrain);
 	
 	void RegisterDemonstrator(AIntersectionDemonstrator* Demonstrator);
 	void UnregisterDemonstrator(AIntersectionDemonstrator* Demonstrator);

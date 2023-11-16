@@ -266,6 +266,11 @@ void UIntersectionSubsystem::RegisterPlayerController(APlayerController* PlayerC
 	PlayerControllerInstance = PlayerController; 
 }
 
+void UIntersectionSubsystem::RegisterNoiseTerrain(ANoiseTerrain* NewNoiseTerrain)
+{
+	this->NoiseTerrain = NewNoiseTerrain;
+}
+
 void UIntersectionSubsystem::RegisterDemonstrator(AIntersectionDemonstrator* Demonstrator)
 {
 	if(!IntersectionDemonstrators.Contains(Demonstrator))

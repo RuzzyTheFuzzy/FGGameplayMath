@@ -9,7 +9,7 @@ AInterpolationDemonstrator::AInterpolationDemonstrator()
 void AInterpolationDemonstrator::BeginPlay()
 {
 	Super::BeginPlay();
-	Interpolator.Initialize();
+	Interpolator->Interpolator.Initialize();
 	Origin = GetActorLocation();
 }
 
@@ -20,9 +20,9 @@ void AInterpolationDemonstrator::Tick(float DeltaTime)
 	// Make sure Goal gets updated, if someone changes TargetPosition at runtime; shouldn't normally be needed.
 	Goal = Origin + TargetPosition;
 	
-	Interpolator.Update(DeltaTime);
+	Interpolator->Interpolator.Update(DeltaTime);
 
-	const auto T = Interpolator.GetValue();
+	const auto T = Interpolator->Interpolator.GetValue();
 	const auto MoveVector = FMath::Lerp(Origin, Goal, T);
 
 	SetActorLocation(MoveVector);
